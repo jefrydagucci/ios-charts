@@ -540,6 +540,46 @@ public class LineChartRenderer: LineScatterCandleRadarChartRenderer
         CGContextRestoreGState(context)
     }
     
+    private func drawCircle(context context: CGContext, index:NSInteger)
+    {
+        guard let dataProvider = dataProvider, lineData = dataProvider.lineData else { return }
+        
+        let phaseY = _animator.phaseY
+        let dataSets = lineData.dataSets
+        
+        var pt = CGPoint()
+        var rect = CGRect()
+        
+        CGContextSaveGState(context)
+        
+        for (var i = 0, count = dataSets.count; i < count; i++)
+        {
+            let dataSet = lineData.getDataSetByIndex(i) as! LineChartDataSet!
+            
+            let trans = dataProvider.getTransformer(dataSet.axisDependency)
+            let valueToPixelMatrix = trans.valueToPixelMatrix
+            
+            var entries = dataSet.yVals
+            
+            let circleRadius:CGFloat = dataSet.circleRadius
+            let circleDiameter = circleRadius * 2.0
+            
+            let e = entries[index]
+            pt.x = CGFloat(e.xIndex)
+            pt.y = CGFloat(e.value) * phaseY
+            pt = CGPointApplyAffineTransform(pt, valueToPixelMatrix)
+            
+            CGContextSetFillColorWithColor(context, UIColor.whiteColor().CGColor)
+            
+            rect.origin.x = pt.x - circleRadius
+            rect.origin.y = pt.y - circleRadius
+            rect.size.width = circleDiameter
+            rect.size.height = circleDiameter
+            CGContextFillEllipseInRect(context, rect)
+        }
+        CGContextRestoreGState(context)
+    }
+    
     private var _highlightPointBuffer = CGPoint()
     
     public override func drawHighlighted(context context: CGContext, indices: [ChartHighlight])
@@ -592,6 +632,8 @@ public class LineChartRenderer: LineScatterCandleRadarChartRenderer
             
             // draw the lines
             drawHighlightLines(context: context, point: _highlightPointBuffer, set: set)
+            
+            self.drawCircle(context: context, index: xIndex)
         }
         
         CGContextRestoreGState(context)
