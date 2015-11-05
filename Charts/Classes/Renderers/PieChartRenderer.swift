@@ -229,7 +229,26 @@ public class PieChartRenderer: ChartDataRendererBase
             {
                 // draw the hole-circle
                 CGContextSetFillColorWithColor(context, holeColor!.CGColor)
-                CGContextFillEllipseInRect(context, CGRect(x: center.x - holeRadius, y: center.y - holeRadius, width: holeRadius * 2.0, height: holeRadius * 2.0))
+                let ellipseRect:CGRect = CGRect(x: center.x - holeRadius, y: center.y - holeRadius, width: holeRadius * 2.0, height: holeRadius * 2.0);
+                CGContextFillEllipseInRect(context, ellipseRect)
+                
+                let rect:CGRect = _chart.circleBox
+                CGContextSetFillColorWithColor( context, UIColor.clearColor().CGColor );
+                CGContextFillRect( context, rect );
+                
+                let holeMargin:CGFloat = 4
+                let holeRect:CGRect = CGRect(x: ellipseRect.origin.x + (holeMargin * 0.5), y: ellipseRect.origin.y + (holeMargin * 0.5), width:ellipseRect.size.width - holeMargin, height:ellipseRect.size.width - holeMargin);
+                
+                let holeRectIntersection:CGRect = CGRectIntersection( holeRect, rect );
+                
+                if( CGRectIntersectsRect( holeRectIntersection, rect ) )
+                {
+                    CGContextAddEllipseInRect(context, holeRectIntersection);
+                    CGContextClip(context);
+                    CGContextClearRect(context, holeRectIntersection);
+                    CGContextSetFillColorWithColor( context, UIColor.clearColor().CGColor );
+                    CGContextFillRect( context, holeRectIntersection);
+                }
             }
             
             // only draw the circle if it can be seen (not covered by the hole)
@@ -248,6 +267,29 @@ public class PieChartRenderer: ChartDataRendererBase
             CGContextRestoreGState(context)
         }
     }
+    
+    //modified by jefrydagucci https://appslon.com
+    public func drawBase(context context: CGContext)
+    {
+        CGContextSaveGState(context)
+        
+        var circleBox = _chart.circleBox
+        let margin:CGFloat = 5.0
+        
+        circleBox.size.width    += margin
+        circleBox.size.height   += margin
+        
+        let center = _chart.centerCircleBox
+        
+        let width   = circleBox.size.width
+        let height  = circleBox.size.height
+        
+        CGContextSetFillColorWithColor(context, UIColor.whiteColor().CGColor)
+        CGContextFillEllipseInRect(context, CGRect(x: center.x - (width * 0.5) , y: center.y - (height * 0.5), width: width, height:height))
+        
+        CGContextRestoreGState(context)
+    }
+    //**modified by jefrydagucci https://appslon.com
     
     /// draws the description text in the center of the pie chart makes most sense when center-hole is enabled
     private func drawCenterText(context context: CGContext)
@@ -274,7 +316,7 @@ public class PieChartRenderer: ChartDataRendererBase
             drawingRect.size = textBounds.size
             
             CGContextSaveGState(context)
-
+            
             let clippingPath = CGPathCreateWithEllipseInRect(holeRect, nil)
             CGContextBeginPath(context)
             CGContextAddPath(context, clippingPath)
