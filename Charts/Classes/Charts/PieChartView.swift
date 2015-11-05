@@ -55,6 +55,12 @@ public class PieChartView: PieRadarChartViewBase
         let optionalContext = UIGraphicsGetCurrentContext()
         guard let context = optionalContext else { return }
         
+        //modified by jefrydagucci
+        if let chartrenderer = renderer as? PieChartRenderer {
+            chartrenderer.drawBase(context: context)
+        }
+        //modified by jefrydagucci
+        
         renderer!.drawData(context: context)
         
         if (valuesToHighlight())
@@ -242,7 +248,7 @@ public class PieChartView: PieRadarChartViewBase
     }
     
     /// Sets the color for the hole that is drawn in the center of the PieChart (if enabled).
-    /// 
+    ///
     /// *Note: Use holeTransparent with holeColor = nil to make the hole transparent.*
     public var holeColor: UIColor?
     {
@@ -272,7 +278,7 @@ public class PieChartView: PieRadarChartViewBase
     }
     
     /// - returns: true if the hole in the center of the PieChart is transparent, false if not.
-    public var isHoleTransparent: Bool 
+    public var isHoleTransparent: Bool
     {
         return (renderer as! PieChartRenderer).holeTransparent
     }
@@ -413,7 +419,7 @@ public class PieChartView: PieRadarChartViewBase
     }
     
     /// the radius of the hole in the center of the piechart in percent of the maximum radius (max = the radius of the whole chart)
-    /// 
+    ///
     /// **default**: 0.5 (50%) (half the pie)
     public var holeRadiusPercent: CGFloat
     {
@@ -429,7 +435,7 @@ public class PieChartView: PieRadarChartViewBase
     }
     
     /// the radius of the transparent circle that is drawn next to the hole in the piechart in percent of the maximum radius (max = the radius of the whole chart)
-    /// 
+    ///
     /// **default**: 0.55 (55%) -> means 5% larger than the center-hole by default
     public var transparentCircleRadiusPercent: CGFloat
     {
