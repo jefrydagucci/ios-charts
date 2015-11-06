@@ -383,7 +383,7 @@ public class PieChartRenderer: ChartDataRendererBase
                 width: circleBox.size.width + shift * 2.0,
                 height: circleBox.size.height + shift * 2.0)
             
-            CGContextSetFillColorWithColor(context, set.colorAt(xIndex).CGColor)
+            CGContextSetFillColorWithColor(context, set.colorAt(xIndex).colorWithAlphaComponent(0.8).CGColor)
             
             // redefine the rect that contains the arc so that the highlighted pie is not cut off
             
