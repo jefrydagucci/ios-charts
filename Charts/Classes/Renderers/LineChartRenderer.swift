@@ -335,6 +335,32 @@ public class LineChartRenderer: LineScatterCandleRadarChartRenderer
         }
     }
     
+//    internal func drawLinearFill(context context: CGContext, dataSet: LineChartDataSet, entries: [ChartDataEntry], minx: Int, maxx: Int, trans: ChartTransformer)
+//    {
+//        guard let dataProvider = dataProvider else { return }
+//        
+//        CGContextSaveGState(context)
+//        
+//        CGContextSetFillColorWithColor(context, dataSet.fillColor.CGColor)
+//        
+//        // filled is usually drawn with less alpha
+//        CGContextSetAlpha(context, dataSet.fillAlpha)
+//        
+//        let filled = generateFilledPath(
+//            entries,
+//            fillMin: dataSet.fillFormatter?.getFillLinePosition(dataSet: dataSet, dataProvider: dataProvider) ?? 0.0,
+//            from: minx,
+//            to: maxx,
+//            matrix: trans.valueToPixelMatrix)
+//        
+//        CGContextBeginPath(context)
+//        CGContextAddPath(context, filled)
+//        CGContextFillPath(context)
+//        
+//        CGContextRestoreGState(context)
+//    }
+    
+    ///draw linear fill with gradient. by http:appslon.com | @jefrydagucci
     internal func drawLinearFill(context context: CGContext, dataSet: LineChartDataSet, entries: [ChartDataEntry], minx: Int, maxx: Int, trans: ChartTransformer)
     {
         guard let dataProvider = dataProvider else { return }
@@ -355,10 +381,37 @@ public class LineChartRenderer: LineScatterCandleRadarChartRenderer
         
         CGContextBeginPath(context)
         CGContextAddPath(context, filled)
-        CGContextFillPath(context)
+        CGContextClip(context)
+        
+        let startColor  = dataSet.fillColor
+        let endColor    = UIColor.blackColor().colorWithAlphaComponent(0)
+        
+        let colors = [startColor.CGColor, endColor.CGColor]
+        
+        //set up the color space
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        
+        //set up the color stops
+        let colorLocations:[CGFloat] = [0.0, 1.0]
+        
+        //create the gradient
+        let gradient = CGGradientCreateWithColors(colorSpace,
+            colors,
+            colorLocations)
+        
+        //draw the gradient
+        let startPoint = CGPoint.zero
+        let endPoint = CGPoint(x:0, y:trans.valueToPixelMatrix.ty)
+        CGContextDrawLinearGradient(context,
+            gradient,
+            startPoint,
+            endPoint,
+            CGGradientDrawingOptions.DrawsBeforeStartLocation)
+        
         
         CGContextRestoreGState(context)
     }
+    
     
     /// Generates the path that is used for filled drawing.
     private func generateFilledPath(entries: [ChartDataEntry], fillMin: CGFloat, from: Int, to: Int, var matrix: CGAffineTransform) -> CGPath
